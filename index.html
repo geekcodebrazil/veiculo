@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Manutenção Veicular</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-car-wrench"></i> Controle Veicular</h1>
+            <button id="theme-toggle" aria-label="Alternar tema">
+                <i class="fas fa-moon"></i> / <i class="fas fa-sun"></i>
+            </button>
+        </header>
+
+        <main>
+            <!-- Seção de Acesso Rápido para Abastecimento -->
+            <section id="quick-access-fueling" class="card">
+                <h2><i class="fas fa-tachometer-alt"></i> Acesso Rápido: Abastecimento</h2>
+                <form id="quick-add-fuel-form">
+                    <div class="form-group">
+                        <label for="quick-fuel-vehicle-select"><i class="fas fa-car"></i> Veículo:</label>
+                        <select id="quick-fuel-vehicle-select" required>
+                            <option value="">Selecione um veículo</option>
+                            <!-- Opções de veículos preenchidas pelo JS -->
+                        </select>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="quick-fuel-km"><i class="fas fa-tachometer-alt"></i> KM Atual:</label>
+                            <input type="number" id="quick-fuel-km" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="quick-fuel-liters"><i class="fas fa-fill-drip"></i> Litros:</label>
+                            <input type="number" id="quick-fuel-liters" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="quick-fuel-value"><i class="fas fa-dollar-sign"></i> Valor Total (R$):</label>
+                            <input type="number" id="quick-fuel-value" step="0.01" min="0" required>
+                        </div>
+                         <div class="form-group">
+                            <label for="quick-fuel-type"><i class="fas fa-tint"></i> Tipo Combustível:</label>
+                            <input type="text" id="quick-fuel-type" placeholder="Ex: Gasolina Comum" value="Gasolina Comum" required>
+                        </div>
+                    </div>
+                    <button type="submit"><i class="fas fa-gas-pump"></i> Registrar Abastecimento Rápido</button>
+                </form>
+                <div id="quick-access-consumption-info" class="card-inset">
+                    <h4><i class="fas fa-calculator"></i> Último Consumo Registrado:</h4>
+                    <p id="last-consumption-display">-- KM/L</p>
+                    <small id="last-consumption-details">(Selecione um veículo e registre um abastecimento para ver)</small>
+                </div>
+            </section>
+
+            <!-- Seção de Gerenciamento de Veículos -->
+            <section id="vehicle-management">
+                <h2><i class="fas fa-car"></i> Meus Veículos</h2>
+                <form id="add-vehicle-form" class="card">
+                    <h3><i class="fas fa-plus-circle"></i> Adicionar Novo Veículo</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="vehicle-type"><i class="fas fa-car-side"></i> Tipo:</label>
+                            <select id="vehicle-type" required>
+                                <option value="Carro">Carro</option>
+                                <option value="Moto">Moto</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle-make"><i class="fas fa-industry"></i> Marca:</label>
+                            <input type="text" id="vehicle-make" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle-model"><i class="fas fa-car-alt"></i> Modelo:</label>
+                            <input type="text" id="vehicle-model" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle-year"><i class="fas fa-calendar-alt"></i> Ano:</label>
+                            <input type="number" id="vehicle-year" min="1900" max="2099" step="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle-plate"><i class="fas fa-digital-tachograph"></i> Placa:</label>
+                            <input type="text" id="vehicle-plate" required pattern="[A-Za-z]{3}-?[0-9][A-Za-z0-9]{3}" title="Formato AAA-1234 ou AAA1B34">
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle-km"><i class="fas fa-tachometer-alt"></i> KM Atual:</label>
+                            <input type="number" id="vehicle-km" min="0" required>
+                        </div>
+                    </div>
+                    <button type="submit"><i class="fas fa-save"></i> Salvar Veículo</button>
+                </form>
+
+                <div id="vehicle-list-container" class="card">
+                    <h3><i class="fas fa-list"></i> Veículos Cadastrados</h3>
+                    <ul id="vehicle-list">
+                        <!-- Veículos serão listados aqui pelo JS usando o template -->
+                        <li class="placeholder">Nenhum veículo cadastrado.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Seção de Detalhes e Logs do Veículo (inicialmente oculta) -->
+            <section id="vehicle-details" class="hidden">
+                <button id="back-to-vehicles"><i class="fas fa-arrow-left"></i> Voltar para Lista</button>
+                <h2 id="selected-vehicle-info">Detalhes do Veículo</h2>
+
+                <div class="dashboard-alerts card">
+                     <h3><i class="fas fa-exclamation-triangle"></i> Alertas Próximas Manutenções</h3>
+                     <ul id="maintenance-alerts-list">
+                         <li class="placeholder">Nenhum alerta ativo.</li>
+                         <!-- Alertas serão adicionados aqui -->
+                     </ul>
+                 </div>
+
+                <nav class="maintenance-nav">
+                    <button data-section="log-fuel" class="active"><i class="fas fa-gas-pump"></i> Abastecimento</button>
+                    <button data-section="log-tire"><i class="fas fa-dot-circle"></i> Calibragem</button>
+                    <button data-section="log-oil"><i class="fas fa-oil-can"></i> Óleo/Filtros</button>
+                    <button data-section="log-revision"><i class="fas fa-tools"></i> Revisões</button>
+                    <button data-section="log-dashboard"><i class="fas fa-chart-line"></i> Dashboard</button>
+                </nav>
+
+                <!-- Formulários e Históricos de Manutenção -->
+                <div id="maintenance-forms-logs">
+                    <!-- Abastecimento -->
+                    <div id="log-fuel" class="maintenance-section card active">
+                        <h3><i class="fas fa-gas-pump"></i> Registrar Abastecimento</h3>
+                        <form id="add-fuel-form">
+                             <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="fuel-date"><i class="fas fa-calendar-day"></i> Data:</label>
+                                    <input type="date" id="fuel-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fuel-km"><i class="fas fa-tachometer-alt"></i> KM no Abastecimento:</label>
+                                    <input type="number" id="fuel-km" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fuel-type"><i class="fas fa-tint"></i> Tipo Combustível:</label>
+                                    <input type="text" id="fuel-type" placeholder="Ex: Gasolina Comum" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fuel-liters"><i class="fas fa-fill-drip"></i> Litros:</label>
+                                    <input type="number" id="fuel-liters" step="0.01" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fuel-value"><i class="fas fa-dollar-sign"></i> Valor Total (R$):</label>
+                                    <input type="number" id="fuel-value" step="0.01" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fuel-station"><i class="fas fa-store-alt"></i> Posto:</label>
+                                    <input type="text" id="fuel-station" placeholder="Opcional">
+                                </div>
+                             </div>
+                            <div class="form-group">
+                                <label for="fuel-notes"><i class="fas fa-sticky-note"></i> Observações:</label>
+                                <textarea id="fuel-notes"></textarea>
+                            </div>
+                            <button type="submit"><i class="fas fa-save"></i> Registrar Abastecimento</button>
+                        </form>
+                        <h4><i class="fas fa-history"></i> Histórico de Abastecimentos</h4>
+                        <div class="log-history-container">
+                            <table class="log-table">
+                                <thead id="fuel-log-head">
+                                    <tr>
+                                        <th>Data</th><th>KM</th><th>Comb.</th><th>Litros</th><th>Valor</th><th>Consumo (KM/L)</th><th>Obs</th><th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fuel-log-history"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Calibragem -->
+                    <div id="log-tire" class="maintenance-section card hidden">
+                        <h3><i class="fas fa-dot-circle"></i> Registrar Calibragem</h3>
+                        <form id="add-tire-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="tire-date"><i class="fas fa-calendar-day"></i> Data:</label>
+                                    <input type="date" id="tire-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tire-km"><i class="fas fa-tachometer-alt"></i> KM:</label>
+                                    <input type="number" id="tire-km" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tire-front-psi"><i class="fas fa-arrow-up"></i> Pressão Dianteira (PSI):</label>
+                                    <input type="number" id="tire-front-psi" step="0.1" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tire-rear-psi"><i class="fas fa-arrow-down"></i> Pressão Traseira (PSI):</label>
+                                    <input type="number" id="tire-rear-psi" step="0.1" min="0" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="tire-notes"><i class="fas fa-sticky-note"></i> Observações:</label>
+                                <textarea id="tire-notes" placeholder="Ex: Pneu X trocado, desgaste Y"></textarea>
+                            </div>
+                            <button type="submit"><i class="fas fa-save"></i> Registrar Calibragem</button>
+                        </form>
+                        <h4><i class="fas fa-history"></i> Histórico de Calibragens</h4>
+                         <div class="log-history-container">
+                            <table class="log-table">
+                                <thead id="tire-log-head">
+                                    <tr>
+                                        <th>Data</th><th>KM</th><th>Diant. (PSI)</th><th>Tras. (PSI)</th><th>Obs</th><th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tire-log-history"></tbody>
+                            </table>
+                         </div>
+                    </div>
+
+                    <!-- Troca de Óleo e Filtros -->
+                    <div id="log-oil" class="maintenance-section card hidden">
+                        <h3><i class="fas fa-oil-can"></i> Registrar Troca de Óleo/Filtro</h3>
+                        <form id="add-oil-form">
+                             <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="oil-date"><i class="fas fa-calendar-day"></i> Data:</label>
+                                    <input type="date" id="oil-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="oil-km"><i class="fas fa-tachometer-alt"></i> KM:</label>
+                                    <input type="number" id="oil-km" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="oil-type"><i class="fas fa-filter"></i> Tipo de Óleo:</label>
+                                    <input type="text" id="oil-type" placeholder="Ex: 10W40 Sintético">
+                                </div>
+                                <div class="form-group">
+                                    <label for="oil-filter"><i class="fas fa-filter"></i> Filtro(s) Trocado(s):</label>
+                                    <input type="text" id="oil-filter" placeholder="Ex: Óleo, Ar, Combustível">
+                                </div>
+                                <div class="form-group">
+                                    <label for="oil-next-km"><i class="fas fa-road"></i> Próxima Troca (KM):</label>
+                                    <input type="number" id="oil-next-km" min="0" placeholder="Opcional">
+                                </div>
+                                <div class="form-group">
+                                    <label for="oil-next-date"><i class="fas fa-calendar-check"></i> Próxima Troca (Data):</label>
+                                    <input type="date" id="oil-next-date">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="oil-notes"><i class="fas fa-sticky-note"></i> Observações:</label>
+                                <textarea id="oil-notes"></textarea>
+                            </div>
+                            <button type="submit"><i class="fas fa-save"></i> Registrar Troca</button>
+                        </form>
+                        <h4><i class="fas fa-history"></i> Histórico de Trocas</h4>
+                        <div class="log-history-container">
+                            <table class="log-table">
+                                <thead id="oil-log-head">
+                                    <tr>
+                                        <th>Data</th><th>KM</th><th>Óleo</th><th>Filtro(s)</th><th>Próx. KM</th><th>Próx. Data</th><th>Obs</th><th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="oil-log-history"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Revisões -->
+                    <div id="log-revision" class="maintenance-section card hidden">
+                         <h3><i class="fas fa-tools"></i> Registrar Revisão</h3>
+                         <form id="add-revision-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="revision-date"><i class="fas fa-calendar-day"></i> Data:</label>
+                                    <input type="date" id="revision-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="revision-km"><i class="fas fa-tachometer-alt"></i> KM:</label>
+                                    <input type="number" id="revision-km" min="0" required>
+                                </div>
+                                <div class="form-group form-group-span-2">
+                                     <label for="revision-items"><i class="fas fa-clipboard-list"></i> Itens Verificados/Trocados:</label>
+                                     <textarea id="revision-items" required placeholder="Liste os itens da revisão"></textarea>
+                                </div>
+                                 <div class="form-group">
+                                    <label for="revision-next-km"><i class="fas fa-road"></i> Próxima Revisão (KM):</label>
+                                    <input type="number" id="revision-next-km" min="0" placeholder="Opcional">
+                                </div>
+                                <div class="form-group">
+                                    <label for="revision-next-date"><i class="fas fa-calendar-check"></i> Próxima Revisão (Data):</label>
+                                    <input type="date" id="revision-next-date">
+                                </div>
+                             </div>
+                            <div class="form-group">
+                                <label for="revision-notes"><i class="fas fa-sticky-note"></i> Observações:</label>
+                                <textarea id="revision-notes"></textarea>
+                            </div>
+                            <button type="submit"><i class="fas fa-save"></i> Registrar Revisão</button>
+                        </form>
+                        <h4><i class="fas fa-history"></i> Histórico de Revisões</h4>
+                        <div class="log-history-container">
+                            <table class="log-table">
+                                <thead id="revision-log-head">
+                                    <tr>
+                                        <th>Data</th><th>KM</th><th>Itens</th><th>Próx. KM</th><th>Próx. Data</th><th>Obs</th><th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="revision-log-history"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                     <!-- Dashboard -->
+                    <div id="log-dashboard" class="maintenance-section card hidden">
+                        <h3><i class="fas fa-chart-line"></i> Dashboard e Relatórios</h3>
+                        <div class="dashboard-grid">
+                            <div class="dashboard-widget">
+                                <h4><i class="fas fa-gas-pump"></i> Consumo Médio Geral</h4>
+                                <p id="avg-consumption">-- KM/L</p>
+                            </div>
+                             <div class="dashboard-widget">
+                                <h4><i class="fas fa-tachometer-alt"></i> KM Médio / Mês</h4>
+                                <p id="avg-km-month">-- KM</p>
+                            </div>
+                             <div class="dashboard-widget">
+                                <h4><i class="fas fa-dollar-sign"></i> Gasto Total (Mês Atual)</h4>
+                                <p id="monthly-spending">R$ --</p>
+                            </div>
+                             <div class="dashboard-widget">
+                                <h4><i class="fas fa-calendar-alt"></i> Gasto Total (Ano Atual)</h4>
+                                <p id="yearly-spending">R$ --</p>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <h4><i class="fas fa-chart-bar"></i> Consumo de Combustível (Últimos 12 meses)</h4>
+                            <canvas id="fuel-consumption-chart"></canvas>
+                        </div>
+                         <div class="chart-container">
+                            <h4><i class="fas fa-chart-pie"></i> Distribuição de Gastos (Ano Atual)</h4>
+                             <canvas id="spending-distribution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Sistema de Controle Veicular - &copy; <span id="current-year"></span></p>
+        </footer>
+    </div>
+
+    <!-- Templates para Itens de Lista e Linhas de Tabela -->
+    <template id="vehicle-list-item-template">
+        <li>
+            <div class="vehicle-info">
+                <strong class="vehicle-name-plate"></strong> <br>
+                <small class="vehicle-details-small"></small>
+            </div>
+            <div class="vehicle-actions">
+                <button class="action-button view-details-btn" title="Ver Detalhes"><i class="fas fa-eye"></i> Detalhes</button>
+                <button class="action-button delete delete-vehicle-btn" title="Excluir Veículo"><i class="fas fa-trash"></i> Excluir</button>
+            </div>
+        </li>
+    </template>
+
+    <template id="fuel-log-row-template">
+        <tr>
+            <td data-label="Data"></td>
+            <td data-label="KM"></td>
+            <td data-label="Combustível"></td>
+            <td data-label="Litros"></td>
+            <td data-label="Valor"></td>
+            <td data-label="Consumo (KM/L)" class="consumption-value"></td>
+            <td data-label="Obs"></td>
+            <td><button class="action-button delete delete-log-btn" title="Excluir Registro"><i class="fas fa-trash-alt"></i></button></td>
+        </tr>
+    </template>
+
+    <template id="tire-log-row-template">
+        <tr>
+            <td data-label="Data"></td>
+            <td data-label="KM"></td>
+            <td data-label="Dianteira (PSI)"></td>
+            <td data-label="Traseira (PSI)"></td>
+            <td data-label="Obs"></td>
+            <td><button class="action-button delete delete-log-btn" title="Excluir Registro"><i class="fas fa-trash-alt"></i></button></td>
+        </tr>
+    </template>
+
+    <template id="oil-log-row-template">
+        <tr>
+            <td data-label="Data"></td>
+            <td data-label="KM"></td>
+            <td data-label="Óleo"></td>
+            <td data-label="Filtro(s)"></td>
+            <td data-label="Próx. KM"></td>
+            <td data-label="Próx. Data"></td>
+            <td data-label="Obs"></td>
+            <td><button class="action-button delete delete-log-btn" title="Excluir Registro"><i class="fas fa-trash-alt"></i></button></td>
+        </tr>
+    </template>
+
+    <template id="revision-log-row-template">
+        <tr>
+            <td data-label="Data"></td>
+            <td data-label="KM"></td>
+            <td data-label="Itens"></td>
+            <td data-label="Próx. KM"></td>
+            <td data-label="Próx. Data"></td>
+            <td data-label="Obs"></td>
+            <td><button class="action-button delete delete-log-btn" title="Excluir Registro"><i class="fas fa-trash-alt"></i></button></td>
+        </tr>
+    </template>
+
+    <script src="script.js"></script>
+</body>
+</html>
